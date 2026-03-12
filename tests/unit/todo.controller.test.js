@@ -1,11 +1,13 @@
 import TodoController from "../../controllers/todo.controller.js";
 import TodoModel from "../../models/todo.model.js";
 import httpMocks from "node-mocks-http";
-import { beforeEach, it, jest } from "@jest/globals";
+import { beforeEach, describe, it, jest } from "@jest/globals";
 import newTodo from "../../mock-data/new-todo.json";
+import allTodos from "../../mock-data/all-todos.json";
 
 
 TodoModel.create = jest.fn();
+TodoModel.find = jest.fn();
 let req, res, next
 
 beforeEach(() => {
@@ -43,5 +45,29 @@ describe("TodoController.createTodo", () => {
         await TodoController.createTodo(req, res, next);
         expect(next).toHaveBeenCalledWith(errorMessage);
     });
-})
+    
+});
+
+describe("TodoController.getTodos", () => {
+    it("should have a getTodos function", () => {
+        expect(typeof TodoController.getTodos).toBe("function");
+    });
+    it("should call TodoModel.find({})", async () => {
+        await TodoController.getTodos(req, res, next)
+        expect(TodoModel.find).toHaveBeenCalledWith({});
+    });
+    it("should return 200 response code and all todos", async () => {
+        TodoModel.find.mockReturnValue(allTodos);
+        await TodoController.getTodos(req, res, next)
+        expect(res.statusCode).toBe(200);
+        expect(res._getJSONData()).toEqual(allTodos);
+    });
+    it("should handle errors", async () => {
+        const errorMessage = { message: "Error getting todos" };
+        const rejectedPromise = Promise.reject(errorMessage);
+        TodoModel.find.mockReturnValue(rejectedPromise);
+        await TodoController.getTodos(req, res, next);
+        expect(next).toHaveBeenCalledWith(errorMessage);
+    });
+});
 
