@@ -47,6 +47,18 @@ class TodoController {
     }
   };
   
+  async deleteTodo(req, res, next) {
+    try {
+      const deletedTodo = await TodoModel.findByIdAndDelete(req.params.id);
+      if (deletedTodo) {
+        res.status(200).json(deletedTodo);
+      } else {
+        res.status(404).json({ message: "Todo not found" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default new TodoController();

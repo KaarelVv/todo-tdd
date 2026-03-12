@@ -73,4 +73,22 @@ describe(endPointUrl, () => {
         expect(response.statusCode).toBe(404);
         expect(response.body).toStrictEqual({ message: "Todo not found" });
     });
+
+    it("DELETE " + endPointUrl + ":id", async () => {
+        const response = await request(app).delete(endPointUrl + firstTodo._id);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.title).toBe(testData.title);
+        expect(response.body.done).toBe(testData.done);
+    });
+
+    it("DELETE with non existing id " + endPointUrl + ":id", async () => {
+        const response = await request(app).delete(endPointUrl + nonExistingId);
+        expect(response.statusCode).toBe(404);
+        expect(response.body).toStrictEqual({ message: "Todo not found" });
+    });
+    it("should return 500 response code on malformed id with DELETE " + endPointUrl + ":id", async () => {
+        const response = await request(app).delete(endPointUrl + "1234");
+        expect(response.statusCode).toBe(500);
+        expect(response.body).toStrictEqual({ message: "Cast to ObjectId failed for value \"1234\" (type string) at path \"_id\" for model \"Todo\"" });
+    });
 });
