@@ -8,6 +8,9 @@ const app = express();
 
 app.use(express.json());
 app.use("/todos", routes);
+app.use((err, req, res, next) => {
+    res.status(500).json({ message: err.message });
+});
 app.get('/', (req, res)=>{
     res.send('express test')
 })

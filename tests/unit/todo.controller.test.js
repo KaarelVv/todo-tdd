@@ -1,7 +1,7 @@
 import TodoController from "../../controllers/todo.controller.js";
 import TodoModel from "../../models/todo.model.js";
 import httpMocks from "node-mocks-http";
-import { beforeEach, jest } from "@jest/globals";
+import { beforeEach, it, jest } from "@jest/globals";
 import newTodo from "../../mock-data/new-todo.json";
 
 
@@ -11,7 +11,7 @@ let req, res, next
 beforeEach(() => {
     req = httpMocks.createRequest()
     res = httpMocks.createResponse()
-    next = null
+    next = jest.fn();
 })
 
 describe("TodoController.createTodo", () => {
@@ -36,6 +36,12 @@ describe("TodoController.createTodo", () => {
         await TodoController.createTodo(req, res, next)
         expect(res._getJSONData()).toEqual(newTodo);
     })
-    
-});
+    it("should handle errors", async () => {
+        const errorMessage = { message: "Error creating todo" };
+        const rejectedPromise = Promise.reject(errorMessage);
+        TodoModel.create.mockReturnValue(rejectedPromise);
+        await TodoController.createTodo(req, res, next);
+        expect(next).toHaveBeenCalledWith(errorMessage);
+    });
+})
 
