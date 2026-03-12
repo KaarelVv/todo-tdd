@@ -9,6 +9,9 @@ import allTodos from "../../mock-data/all-todos.json";
 TodoModel.create = jest.fn();
 TodoModel.find = jest.fn();
 TodoModel.findById = jest.fn();
+TodoModel.findByIdAndUpdate = jest.fn();
+
+const testId = "69b29fe18447dd2a2d50c457";
 
 let req, res, next
 beforeEach(() => {
@@ -103,3 +106,34 @@ describe("TodoController.getTodoById", () => {
     });
 });
 
+describe("TodoController.updateTodo", () => {
+    it("should have an updateTodo function", () => {
+        expect(typeof TodoController.updateTodo).toBe("function");
+    }); 
+    it("should update with TodoModel.findByIdAndUpdate", async () => {
+        req.params.id = testId;
+        req.body = newTodo;
+        await TodoController.updateTodo(req, res, next);
+        expect(TodoModel.findByIdAndUpdate).toHaveBeenCalledWith(testId, newTodo, { new: true, useFindAndModify: false });
+    });
+    it("should return 200 response code and the updated todo", async () => {
+        const updatedTodo = { ...newTodo, _id: testId };    
+        TodoModel.findByIdAndUpdate.mockReturnValue(updatedTodo);
+        await TodoController.updateTodo(req, res, next);
+        expect(res.statusCode).toBe(200);
+        expect(res._getJSONData()).toEqual(updatedTodo);
+    });
+    it("should return 404 response code when the todo to update does not exist", async () => {
+        TodoModel.findByIdAndUpdate.mockReturnValue(null);
+        await TodoController.updateTodo(req, res, next);
+        expect(res.statusCode).toBe(404);
+        expect(res._getJSONData()).toEqual({ message: "Todo not found" });
+    });
+    it("should handle errors", async () => {
+        const errorMessage = { message: "Error updating todo" };
+        const rejectedPromise = Promise.reject(errorMessage);
+        TodoModel.findByIdAndUpdate.mockReturnValue(rejectedPromise);
+        await TodoController.updateTodo(req, res, next);
+        expect(next).toHaveBeenCalledWith(errorMessage);
+    });
+});

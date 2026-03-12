@@ -5,7 +5,13 @@ import TodoModel from '../../models/todo.model.js';
 import { beforeEach, describe, it, jest } from '@jest/globals';
 
 const endPointUrl = '/todos/';
-let firstTodo;
+let firstTodo, newTodoId;
+
+const testData = {
+    title: "Test todo",
+    done: false
+}
+const nonExistingId = "612345678901234567890123";
 
 describe(endPointUrl, () => {
     it("POST " + endPointUrl, async () => {
@@ -44,8 +50,26 @@ describe(endPointUrl, () => {
     });
 
     it("GET by id with non existing id" + endPointUrl + ":id", async () => {
-        const nonExistingId = "612345678901234567890123";
         const response = await request(app).get(endPointUrl + nonExistingId);
+        expect(response.statusCode).toBe(404);
+        expect(response.body).toStrictEqual({ message: "Todo not found" });
+    });
+
+    it("PUT " + endPointUrl + ":id", async () => {
+        const response = await request(app)
+            .put(endPointUrl + firstTodo._id)
+            .send(testData);
+
+        expect(response.statusCode).toBe(200);
+        expect(response.body.title).toBe(testData.title);
+        expect(response.body.done).toBe(testData.done);
+    });
+
+    it("PUT with non existing id " + endPointUrl + ":id", async () => {
+        const response = await request(app)
+            .put(endPointUrl + nonExistingId)
+            .send(testData);
+
         expect(response.statusCode).toBe(404);
         expect(response.body).toStrictEqual({ message: "Todo not found" });
     });

@@ -32,6 +32,20 @@ class TodoController {
       next(error);
     }
   };
+
+  async updateTodo(req, res, next) {
+    try {
+      const updatedTodo = await TodoModel.findByIdAndUpdate(req.params.id, req.body, 
+        { new: true, useFindAndModify: false });
+      if (updatedTodo) {
+        res.status(200).json(updatedTodo);
+      } else {
+        res.status(404).json({ message: "Todo not found" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
   
 }
 
