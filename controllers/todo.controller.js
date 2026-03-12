@@ -19,6 +19,20 @@ class TodoController {
       next(error);
     }
   };
+
+  async getTodoById(req, res, next) {
+    try {
+      const todo = await TodoModel.findById(req.params.id);
+      if (todo) {
+        res.status(200).json(todo);
+      } else {
+        res.status(404).json({ message: "Todo not found" });
+      }
+    } catch (error) {
+      next(error);
+    }
+  };
+  
 }
 
 export default new TodoController();
